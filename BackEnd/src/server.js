@@ -6,11 +6,12 @@ import { fileURLToPath } from "url";
 import path from "path"
 import {connectDB} from "./lib/db.js"
 
+import cookieParser from "cookie-parser"
 
 import { ENV } from "./lib/env.js";
 const app=express();
 app.use(express.json())
-
+app.use(cookieParser())
 
 
 
