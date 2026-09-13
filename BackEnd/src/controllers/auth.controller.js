@@ -4,7 +4,7 @@ import jwt from 'jsonwebtoken'
 import { generateToken } from "../lib/util.js";
 import { ENV } from "../lib/env.js";
 import { sendWelcomeEmail } from "../emails/emailHandler.js";
-
+import cloudinary from "../lib/cloudinary.js";
 
 export const signup = async (req, resp) => {
     const { fullname, email, password } = req.body;
@@ -135,4 +135,32 @@ export const logout = async (_, resp) => {
         success: true,
         message: "Logged out successfully"
     })
+}
+
+export const updateProfile = async (req, resp) => {
+    try {
+        const { profilePic } = req.body
+        if (!profilePic) {
+            return resp.status(400).json({
+                success: false,
+                message: "Profile picture is required"
+            })
+        }
+        const userId = req.user._id;
+        const uploadResponse = await cloudinary.uploader.upload(profilePic);
+        const updatedUser = await User.findByIdAndUpdate(userId, { profilePic: uploadResponse.secure_url }, { new: true })
+
+        return resp.status(200).json({
+            success: true,
+            message: "Profile pictue is uploaded",
+            User: updatedUser
+        })
+    } catch (error) {
+        console.error("Error in updateProfile:", error);
+
+        return resp.status(500).json({
+            success: false,
+            message: "Internal Server Error"
+        });
+    }
 }
