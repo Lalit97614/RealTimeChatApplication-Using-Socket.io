@@ -2,6 +2,9 @@ import User from "../models/User.js";
 import bcrypt from "bcryptjs";
 import jwt from 'jsonwebtoken'
 import { generateToken } from "../lib/util.js";
+import { ENV } from "../lib/env.js";
+import { sendWelcomeEmail } from "../emails/emailHandler.js";
+
 
 export const signup = async (req, resp) => {
     const { fullname, email, password } = req.body;
@@ -49,6 +52,18 @@ export const signup = async (req, resp) => {
 
         const token = generateToken(user._id,resp);
 
+
+       // Send welcome email
+        try {
+            await sendWelcomeEmail(
+                user.email,
+                user.fullname,
+                ENV.CLIENT_URL
+            );
+        } catch (error) {
+            console.log("Welcome email error:", error);
+        }
+
         return resp.status(201).json({
             success:true,
             message:"User is successfully registered",
@@ -58,6 +73,8 @@ export const signup = async (req, resp) => {
                fullname :user.fullname
             }
         })
+
+        
 
     } catch (error) {   
     console.log(error);
